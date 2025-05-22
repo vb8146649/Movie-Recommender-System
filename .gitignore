@@ -1,0 +1,4 @@
+venv
+movies_dict.pkl
+similarity.pkl
+secrets.yaml
