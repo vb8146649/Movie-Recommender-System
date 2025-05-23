@@ -8,7 +8,7 @@ This is a **Movie Recommender System** built with [Streamlit](https://streamlit.
 ## 📸 Screenshots
 
 ### 🔍 Movie Search 
-<img src="https://github.com/vb8146649/Movie-Recommender-System/blob/main/demo.gif" alt="movie-recommender-demo" width=300 height=300>
+<img src="https://github.com/vb8146649/Movie-Recommender-System/blob/main/demo.gif" alt="movie-recommender-demo" width=600 height=600>
 
 ---
 
