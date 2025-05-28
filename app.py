@@ -10,25 +10,25 @@ api_key = st.secrets["api_key"]
 
 max_length = 5  # Maximum number of movies to keep in history 
 
+# Download similarity matrix
 output = 'similarity.pkl'
 file_id = st.secrets["similarity"]
 if not os.path.exists(output):
-    print("Downloading similarity.pkl from Google Drive...")
     gdown.download(id=file_id, output=output, quiet=False)
 
 with open(output, 'rb') as f:
     similarity = pickle.load(f)
 
+# Download movie dictionary
 output2 = 'movies_dict.pkl'
 file_id = st.secrets["movies_dict"]
 if not os.path.exists(output2):
-    print("Downloading movies_dict.pkl from Google Drive...")
     gdown.download(id=file_id, output=output2, quiet=False)
 
 with open(output2, 'rb') as f:
     movies = pd.DataFrame(pickle.load(f))
 
-
+# Fetch movie poster
 def fetch_poster(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -38,18 +38,19 @@ def fetch_poster(movie_id):
     else:
         return "https://www.themoviedb.org/t/p/w500_and_h282_face/4j0PNHk9i6Y8v2w1n3f5a7c2z4h.jpg"
 
-
+# Recommend function
 def recommend(movie, history):
-    if movie !='' and movie not in history:
+    if movie != '' and movie not in history:
         history.append(movie)
+        history[:] = history[-max_length:]  # Limit history
 
     distances = np.zeros(len(similarity[0]))
     for m in history:
-        d=1
-        if(m==movie):
-            d=3 # Boost the current movie's influence
-        idx = movies[movies['title'] == m].index[0]
-        distances += similarity[idx]*d
+        d = 3 if m == movie else 1
+        match = movies[movies['title'] == m]
+        if not match.empty:
+            idx = match.index[0]
+            distances += similarity[idx] * d
     distances /= len(history)
     movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[:20]
 
@@ -61,22 +62,22 @@ def recommend(movie, history):
         recommended_movies_posters.append(fetch_poster(movie_id))
     return recommended_movies, recommended_movies_posters
 
-
+# App UI
 st.title('Movie Recommender System')
 
 if 'history' not in st.session_state:
     st.session_state.history = []
 
-# Selectbox with the currently selected movie as default
+# Movie selection
 option = st.selectbox(
     "Search Similar Movies",
     movies['title'].values,
-    index=None,
-    placeholder="Based On Previous Selection...",
+    placeholder="Based On Previous Selection..."
 )
 
-if st.button("Recommend"):
-    names, posters = recommend(option, st.session_state.history[max(-max_length,len(st.session_state.history)*(-1)):])
+# Recommendation logic
+if option and st.button("Recommend"):
+    names, posters = recommend(option, st.session_state.history)
     num_movies = len(names)
     num_cols = 4
     rows = (num_movies + num_cols - 1) // num_cols
