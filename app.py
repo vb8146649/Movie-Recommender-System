@@ -26,6 +26,7 @@ if not os.path.exists(output2):
 with open(output2, 'rb') as f:
     movies = pd.DataFrame(pickle.load(f))
 
+
 def fetch_poster(movie_id):
     url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=en-US'
     response = requests.get(url)
@@ -34,6 +35,7 @@ def fetch_poster(movie_id):
         return "https://image.tmdb.org/t/p/w500" + data['poster_path']
     else:
         return "https://www.themoviedb.org/t/p/w500_and_h282_face/4j0PNHk9i6Y8v2w1n3f5a7c2z4h.jpg"
+
 
 def recommend(movie, history=[]):
     if movie and movie not in history:
@@ -57,6 +59,7 @@ def recommend(movie, history=[]):
         recommended_movies_posters.append(fetch_poster(movie_id))
     return recommended_movies, recommended_movies_posters
 
+
 st.title('Movie Recommender System')
 
 if 'selected_movie' not in st.session_state:
@@ -65,6 +68,7 @@ if 'selected_movie' not in st.session_state:
 if 'history' not in st.session_state:
     st.session_state.history = []
 
+# Selectbox with the currently selected movie as default
 option = st.selectbox(
     "Search Similar Movies",
     movies['title'].values,
@@ -78,39 +82,56 @@ if st.button("Recommend") or st.session_state.selected_movie:
     num_cols = 4
     rows = (num_movies + num_cols - 1) // num_cols
 
+    # Inject CSS to hide all buttons and make them cover the card area
+    st.markdown(
+        """
+        <style>
+        /* Hide Streamlit buttons default style and stretch them */
+        div.stButton > button {
+            all: unset;
+            width: 100%;
+            height: 250px;
+            cursor: pointer;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+        /* Make the card content unclickable, clicks go to the button */
+        .movie-card {
+            pointer-events: none;
+            height: 250px;
+            text-align: center;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     for row in range(rows):
         cols = st.columns(num_cols)
         for col_idx in range(num_cols):
             idx = row * num_cols + col_idx
             if idx < num_movies:
                 with cols[col_idx]:
-                    btn_key = f"card_click_{idx}"
-                    clicked = st.button(" ", key=btn_key)
+                    clicked = st.button("", key=f"movie_btn_{idx}", help="Click movie to select")
 
                     st.markdown(
                         f"""
-                        <style>
-                        #{btn_key} {{
-                            position: absolute;
-                            width: 100%;
-                            height: 250px;
-                            opacity: 0;
-                            z-index: 10;
-                            cursor: pointer;
-                        }}
-                        </style>
-                        <div style="position: relative; height: 250px; text-align: center; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
-                            <div id="{btn_key}"></div>
-                            <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover;" />
-                            <p style="margin-top: 10px; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                        <div class="movie-card">
+                            <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
+                            <p style="
+                                margin-top: 10px;
+                                font-weight: bold;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-overflow: ellipsis;" title="{names[idx]}">
                                 {names[idx]}
                             </p>
                         </div>
                         """,
-                        unsafe_allow_html=True
+                        unsafe_allow_html=True,
                     )
 
                     if clicked:
                         st.session_state.selected_movie = names[idx]
-                        st.markdown("<script>window.scrollTo({top: 0, behavior: 'smooth'});</script>", unsafe_allow_html=True)
                         st.experimental_rerun()
