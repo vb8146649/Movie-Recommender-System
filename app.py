@@ -47,7 +47,7 @@ def recommend(movie, history):
     for m in history:
         d=1
         if(m==movie):
-            d=4
+            d=3 # Boost the current movie's influence
         idx = movies[movies['title'] == m].index[0]
         distances += similarity[idx]*d
     distances /= len(history)
