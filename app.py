@@ -73,7 +73,7 @@ option = st.selectbox(
     placeholder="Select a movie...",
 )
 
-if st.button("Recommend") or st.session_state.selected_movie:
+if st.button("Recommend"):
     names, posters = recommend(option, st.session_state.history)
     num_movies = len(names)
     num_cols = 4
