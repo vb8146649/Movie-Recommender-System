@@ -84,22 +84,33 @@ if st.button("Recommend") or st.session_state.selected_movie:
             idx = row * num_cols + col_idx
             if idx < num_movies:
                 with cols[col_idx]:
-                    if st.button("\u200b", key=f"poster_{idx}"):
-                        st.session_state.selected_movie = names[idx]
-                        st.rerun()
+                    btn_key = f"card_click_{idx}"
+                    clicked = st.button(" ", key=btn_key)
+
                     st.markdown(
                         f"""
-                        <div style="height: 250px; text-align: center; cursor: pointer;">
-                            <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
-                            <p style="
-                                margin-top: 10px;
-                                font-weight: bold;
-                                overflow: hidden;
-                                white-space: nowrap;
-                                text-overflow: ellipsis;">
+                        <style>
+                        #{btn_key} {{
+                            position: absolute;
+                            width: 100%;
+                            height: 250px;
+                            opacity: 0;
+                            z-index: 10;
+                            cursor: pointer;
+                        }}
+                        </style>
+                        <div style="position: relative; height: 250px; text-align: center; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+                            <div id="{btn_key}"></div>
+                            <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover;" />
+                            <p style="margin-top: 10px; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
                                 {names[idx]}
                             </p>
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
+
+                    if clicked:
+                        st.session_state.selected_movie = names[idx]
+                        st.markdown("<script>window.scrollTo({top: 0, behavior: 'smooth'});</script>", unsafe_allow_html=True)
+                        st.experimental_rerun()
