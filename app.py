@@ -62,9 +62,6 @@ def recommend(movie, history=[]):
 
 st.title('Movie Recommender System')
 
-if 'selected_movie' not in st.session_state:
-    st.session_state.selected_movie = None
-
 if 'history' not in st.session_state:
     st.session_state.history = []
 
@@ -72,7 +69,7 @@ if 'history' not in st.session_state:
 option = st.selectbox(
     "Search Similar Movies",
     movies['title'].values,
-    index=movies[movies['title'] == st.session_state.selected_movie].index[0] if st.session_state.selected_movie else None,
+    index=None,
     placeholder="Select a movie...",
 )
 
@@ -82,56 +79,26 @@ if st.button("Recommend") or st.session_state.selected_movie:
     num_cols = 4
     rows = (num_movies + num_cols - 1) // num_cols
 
-    # Inject CSS to hide all buttons and make them cover the card area
-    st.markdown(
-        """
-        <style>
-        /* Hide Streamlit buttons default style and stretch them */
-        div.stButton > button {
-            all: unset;
-            width: 100%;
-            height: 250px;
-            cursor: pointer;
-            display: block;
-            position: relative;
-            z-index: 2;
-        }
-        /* Make the card content unclickable, clicks go to the button */
-        .movie-card {
-            pointer-events: none;
-            height: 250px;
-            text-align: center;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
     for row in range(rows):
         cols = st.columns(num_cols)
         for col_idx in range(num_cols):
             idx = row * num_cols + col_idx
             if idx < num_movies:
                 with cols[col_idx]:
-                    clicked = st.button("", key=f"movie_btn_{idx}", help="Click movie to select")
-
                     st.markdown(
                         f"""
-                        <div class="movie-card">
-                            <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
+                        <div style="height: 250px; text-align: center;">
+                        <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
                             <p style="
                                 margin-top: 10px;
                                 font-weight: bold;
                                 overflow: hidden;
                                 white-space: nowrap;
-                                text-overflow: ellipsis;" title="{names[idx]}">
-                                {names[idx]}
+                                text-overflow: ellipsis;
+                            " title="{names[idx]}">
+                            {names[idx]}
                             </p>
                         </div>
                         """,
-                        unsafe_allow_html=True,
+                        unsafe_allow_html=True
                     )
-
-                    if clicked:
-                        st.session_state.selected_movie = names[idx]
-                        st.experimental_rerun()
