@@ -6,10 +6,12 @@ import numpy as np
 import gdown
 import os
 
-api_key = st.secrets['api_key']
+api_key = st.secrets["api_key"]
+
+max_length = 5  # Maximum number of movies to keep in history 
 
 output = 'similarity.pkl'
-file_id = st.secrets['similarity']
+file_id = st.secrets["similarity"]
 if not os.path.exists(output):
     print("Downloading similarity.pkl from Google Drive...")
     gdown.download(id=file_id, output=output, quiet=False)
@@ -18,7 +20,7 @@ with open(output, 'rb') as f:
     similarity = pickle.load(f)
 
 output2 = 'movies_dict.pkl'
-file_id = st.secrets['movies_dict']
+file_id = st.secrets["movies_dict"]
 if not os.path.exists(output2):
     print("Downloading movies_dict.pkl from Google Drive...")
     gdown.download(id=file_id, output=output2, quiet=False)
@@ -37,19 +39,19 @@ def fetch_poster(movie_id):
         return "https://www.themoviedb.org/t/p/w500_and_h282_face/4j0PNHk9i6Y8v2w1n3f5a7c2z4h.jpg"
 
 
-def recommend(movie, history=[]):
-    if movie and movie not in history:
+def recommend(movie, history):
+    if movie !='' and movie not in history:
         history.append(movie)
 
     distances = np.zeros(len(similarity[0]))
     for m in history:
+        d=1
+        if(m==movie):
+            d=4
         idx = movies[movies['title'] == m].index[0]
-        distances += similarity[idx]
+        distances += similarity[idx]*d
     distances /= len(history)
-
-    movie_index = movies[movies['title'] == movie].index[0]
-    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])
-    movies_list = [i for i in movies_list if i[0] != movie_index][:20]
+    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[:20]
 
     recommended_movies = []
     recommended_movies_posters = []
@@ -70,11 +72,11 @@ option = st.selectbox(
     "Search Similar Movies",
     movies['title'].values,
     index=None,
-    placeholder="Select a movie...",
+    placeholder="Based On Previous Selection...",
 )
 
 if st.button("Recommend"):
-    names, posters = recommend(option, st.session_state.history)
+    names, posters = recommend(option, st.session_state.history[max(-max_length,len(st.session_state.history)*(-1)):])
     num_movies = len(names)
     num_cols = 4
     rows = (num_movies + num_cols - 1) // num_cols
