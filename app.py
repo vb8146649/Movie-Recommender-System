@@ -90,6 +90,7 @@ if option and st.button("Recommend"):
                 with cols[col_idx]:
                     st.markdown(
                         f"""
+                        <a src="https://vidsrc.xyz/embed/movie/{posters[idx]} target="_blank">
                         <div style="height: 250px; text-align: center;">
                         <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
                             <p style="
@@ -102,6 +103,7 @@ if option and st.button("Recommend"):
                             {names[idx]}
                             </p>
                         </div>
+                        </a>
                         """,
                         unsafe_allow_html=True
                     )
