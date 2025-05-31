@@ -56,11 +56,13 @@ def recommend(movie, history):
 
     recommended_movies = []
     recommended_movies_posters = []
+    recommended_id = []
     for i in movies_list:
         movie_id = movies.iloc[i[0]].id
         recommended_movies.append(movies.iloc[i[0]].title)
         recommended_movies_posters.append(fetch_poster(movie_id))
-    return recommended_movies, recommended_movies_posters
+        recommended_id.append(movie_id)
+    return recommended_movies, recommended_movies_posters ,recommended_id;
 
 # App UI
 st.title('Movie Recommender System')
@@ -77,7 +79,7 @@ option = st.selectbox(
 
 # Recommendation logic
 if option and st.button("Recommend"):
-    names, posters = recommend(option, st.session_state.history)
+    names, posters , ids = recommend(option, st.session_state.history)
     num_movies = len(names)
     num_cols = 4
     rows = (num_movies + num_cols - 1) // num_cols
@@ -90,7 +92,7 @@ if option and st.button("Recommend"):
                 with cols[col_idx]:
                     st.markdown(
                         f"""
-                        <a src="https://vidsrc.xyz/embed/movie/{posters[idx]} target="_blank">
+                        <a src="https://vidsrc.xyz/embed/movie/{ids[idx]} target="_blank">
                         <div style="height: 250px; text-align: center;">
                         <img src="{posters[idx]}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
                             <p style="
